@@ -27,226 +27,208 @@
 ---
 
 ## Task A0 — Repository and developer bootstrap
-
 **Owner:** Lead  
 **Depends on:** none
 
-**Deliverable:** runnable monorepo/toolchain, CI, formatting/lint/typecheck/test conventions, package boundaries for `core`, `execution`, `platform`, and shared contracts.
+Deliver a runnable monorepo/toolchain, CI, formatting/lint/typecheck/test conventions, and package boundaries for `core`, `execution`, `platform`, and shared contracts.
 
-**Acceptance:** a clean checkout installs, typechecks, runs unit tests, runs contract tests, and produces a deterministic CI result.
+Acceptance: a clean checkout installs, typechecks, runs unit tests, runs contract tests, and produces deterministic CI.
 
 ## Task A1 — Canonical persistence schema
-
 **Owner:** Worker A  
 **Depends on:** A0
 
-Create the PostgreSQL schema for Organization, User, Team, Client, Matter, Party, WorkItem, KnowledgeSource, SourceVersion, Document, EvidenceLink, Workflow, AgentRun, Artifact, Approval, Outcome, App, AppVersion, AppInstallation, Capability, AuditEvent.
-
-Use explicit tenant/matter foreign keys and indexes for authorization predicates. Write migration tests and uniqueness/foreign-key tests.
+Create PostgreSQL schema for Organization, User, Team, Client, Matter, Party, WorkItem, KnowledgeSource, SourceVersion, Document, EvidenceLink, Workflow, AgentRun, Artifact, Approval, Outcome, App, AppVersion, AppInstallation, Capability, AuditEvent. Add authorization-supporting indexes and migration tests.
 
 ## Task A2 — Identity, policy and matter authorization
-
 **Owner:** Worker A  
 **Depends on:** A1
 
-Implement organization membership, roles/policies, matter ACLs, ethical-wall constraints, capability authorization and policy evaluation. Add deny-by-default tests for cross-tenant, cross-matter and revoked-capability access.
+Implement organization membership, roles/policies, matter ACLs, ethical-wall constraints, capability authorization and policy evaluation. Test cross-tenant, cross-matter and revoked-capability denials.
 
 ## Task A3 — Matter/Work APIs
-
 **Owner:** Worker A  
 **Depends on:** A1,A2
 
-Implement typed APIs/repositories for Matter and WorkItem lifecycle. Work creation must support objective, scope, priority, budget and actor context. Emit canonical work events.
+Implement typed Matter/WorkItem lifecycle APIs with objective, scope, priority, budget and actor context. Emit canonical work events. Prove authorization and idempotency.
 
 ## Task A4 — Knowledge/source/evidence persistence
-
 **Owner:** Worker A  
 **Depends on:** A1,A2
 
-Implement source/version/document metadata, immutable versioning and EvidenceLink APIs. Establish locator schemas for page/paragraph/table/span/citation positions. Add integrity and provenance tests.
+Implement source/version/document metadata, immutable versions and EvidenceLink APIs with page/paragraph/table/span/citation locators. Prove integrity and provenance.
 
 ## Task A5 — Legal Work Graph
-
 **Owner:** Worker A  
 **Depends on:** A3,A4
 
-Build relational graph projections and query APIs for matter, people, knowledge, work, evidence and outcome relationships. Provide bounded traversal interfaces instead of leaking graph storage to consumers.
+Build relational graph projections and bounded query APIs for matter, people, knowledge, work, evidence and outcomes. No graph database becomes a new system of record.
 
 ## Task A6 — Case Brain / Firm Brain
-
 **Owner:** Worker A  
 **Depends on:** A5
 
-Create materialized read models aggregating current matter state, open work, key facts, authorities, evidence gaps, decisions, outcomes and approved firm knowledge. All derived state must identify source events and projection version.
+Create materialized read models for current matter state, open work, facts, authorities, evidence gaps, decisions, outcomes and approved firm knowledge. Every projection records source event and projection version.
 
 ## Task A7 — Audit/event infrastructure
-
 **Owner:** Worker A  
 **Depends on:** A1,A2
 
-Implement canonical event envelope, append-only audit records, idempotency keys, correlation/causation IDs and an internal event consumer contract.
+Implement canonical event envelope, append-only audit records, idempotency keys, correlation/causation IDs and event consumer contracts.
 
 ---
 
 ## Task B1 — Execution contracts
-
 **Owner:** Worker B  
 **Depends on:** A0
 
-Freeze TypeScript contracts for Agent, Tool, WorkflowDefinition, WorkflowVersion, TaskNode, EvidenceRequirement, Evaluator, ApprovalRequest, ModelRoute and AgentRun. These types must not import infrastructure implementation details.
+Freeze typed contracts for Agent, Tool, WorkflowDefinition/Version, TaskNode, EvidenceRequirement, Evaluator, ApprovalRequest, ModelRoute and AgentRun. Contracts must remain infrastructure-independent.
 
 ## Task B2 — Model Gateway
-
 **Owner:** Worker B  
 **Depends on:** B1
 
-Implement provider-neutral request/response types, routing policy, model metadata, budgets, fallback and redaction hooks. Provider SDKs live only under adapters.
+Implement provider-neutral routing, model metadata, budgets, fallback and redaction hooks. Provider SDKs live only behind adapters.
 
 ## Task B3 — Tool Registry and policy bridge
-
 **Owner:** Worker B  
 **Depends on:** B1,A2
 
-Register typed tools with required capabilities/data classes and route every invocation through authorization and audit. Add contract tests showing denied tools cannot execute.
+Register typed tools with required capabilities/data classes. Route every invocation through authorization and audit. Denied tools must never execute.
 
 ## Task B4 — Work Compiler
-
 **Owner:** Worker B  
 **Depends on:** B1,A3,A5
 
-Implement objective-to-work-graph compilation. Output must be a typed plan with task dependencies, evidence requirements, allowed tools/agents, budgets, verification and approval gates. Plans are inspectable before execution.
+Compile a legal objective into an inspectable typed work graph with dependencies, evidence requirements, agent/tool scopes, budgets, verification and approval gates. Compilation must not execute work.
 
 ## Task B5 — Durable workflow runtime
-
 **Owner:** Worker B  
 **Depends on:** B1,B3
 
-Implement workflow execution on a Temporal-class abstraction with retries, checkpointing, idempotency, cancellation, concurrency limits, version pinning and resumability.
+Implement Temporal-class durable execution with retries, checkpointing, idempotency, cancellation, concurrency limits, resumability and immutable workflow-version pinning.
 
 ## Task B6 — Evidence and verification engine
-
 **Owner:** Worker B  
 **Depends on:** A4,A5,B1
 
-Implement citation, quote, authority, temporal, completeness, contradiction and policy verifiers. Produce an Evidence Report attached to AgentRun/Artifact outputs.
+Implement citation, quote, authority, temporal, completeness, contradiction and policy verification. Produce Evidence Reports linked to AgentRuns/Artifacts.
 
 ## Task B7 — Artifact and approval execution
-
 **Owner:** Worker B  
 **Depends on:** B5,B6
 
-Implement versioned artifact lifecycle, approval requests and approved/rejected transitions. Consequential external actions require approval according to policy.
+Implement versioned artifacts and approval requests/transitions. Policy-defined consequential actions require approval before effect.
 
 ## Task B8 — AI Workforce
-
 **Owner:** Worker B  
 **Depends on:** B2,B4,B5,B6
 
-Implement the bounded agent catalog and executor. Initial roles: Researcher, Document Reviewer, Citation Checker, Chronology Builder, Drafting Agent, Redline Agent, Deposition Analyst, Due Diligence Analyst, Regulatory Monitor, Client Update Agent, Deadline Agent, Knowledge Curator and Quality Controller.
+Implement bounded specialist agents: Researcher, Document Reviewer, Citation Checker, Chronology Builder, Drafting Agent, Redline Agent, Deposition Analyst, Due Diligence Analyst, Regulatory Monitor, Client Update Agent, Deadline Agent, Knowledge Curator and Quality Controller.
 
 ---
 
 ## Task C1 — Connector and authority framework
-
 **Owner:** Worker C  
-**Depends on:** A2,A4 contracts
+**Depends on:** A2,A4
 
-Implement connector interfaces for authority systems, DMS, email and external systems. Connectors emit provenance-preserving SourceVersions and never bypass Spector authorization.
+Implement versioned authority/DMS/email/external-system connector contracts. Connectors produce provenance-preserving SourceVersions and obey Spector authorization.
 
 ## Task C2 — Legal Inbox
-
 **Owner:** Worker C  
 **Depends on:** A3,A7
 
-Build event-driven inbox projections for what changed, what needs the lawyer, what AI did, approvals, deadlines and exceptions. Inbox items are links to canonical Work/Matter state, not a second task database.
+Build event-driven inbox projections for changed items, lawyer actions, AI activity, approvals, deadlines and exceptions. Inbox is a projection over canonical Work/Matter state, not a second task database.
 
 ## Task C3 — Migration/import engine
-
 **Owner:** Worker C  
 **Depends on:** A3,A4
 
-Implement discovery, mapping, import validation and provenance-preserving reconstruction for matter metadata, documents, templates, workflows, permissions and historical outcomes.
+Implement discovery, mapping, validation and provenance-preserving import for matter metadata, documents, templates, workflows, permissions and historical outcomes. Imports are idempotent.
 
 ## Task C4 — Benchmark / Prove-It engine
-
 **Owner:** Worker C  
 **Depends on:** B6,C3
 
-Run historical matters through configurable workflows and compare time, evidence coverage, errors, completion rate and human review. Results must be reproducible and data-scoped.
+Run imported historical matters through configurable workflows and compare time, evidence coverage, errors, completion and human-review burden. Results must be reproducible and clearly distinguish measured data from simulation.
 
 ## Task C5 — Staffing and firm economics
-
 **Owner:** Worker C  
 **Depends on:** A3,A6,A7
 
-Produce projections for lawyer/AI allocation, utilization, matter cost, write-offs, cycle time and recovered capacity. Calculations must cite source WorkItems/events and expose assumptions.
+Produce projections for lawyer/AI allocation, utilization, matter cost, write-offs, cycle time and recovered capacity. Metrics cite source WorkItems/events and expose assumptions.
 
 ## Task C6 — Developer SDK and app manifest
-
 **Owner:** Worker C  
 **Depends on:** A0
 
-Create app manifest schema, SDK types, lifecycle hooks, capability declaration format and local validation/test harness.
+Create app manifest schema, SDK types, lifecycle hooks, capability declarations and local validation/test harness.
 
 ## Task C7 — App Registry and Marketplace
-
 **Owner:** Worker C  
 **Depends on:** C6,A2,A7
 
-Implement developer submission, version registry, security metadata, review states, listing/search/read APIs and marketplace catalog. Published package versions are immutable.
+Implement developer submission, immutable app/version registry, security metadata, review states, listing/search/read APIs and marketplace catalog. Only approved immutable versions are installable.
 
 ## Task C8 — App capability/token service
-
 **Owner:** Worker C  
 **Depends on:** C6,A2
 
-Issue narrowly scoped capability tokens and revoke them immediately. Support org/matter/resource/operation/expiry scope. Audit every grant/revoke.
+Issue narrowly scoped capability tokens by organization, app installation, resource class, operation, optional matter and expiry. Support immediate revocation and audit every grant/revoke.
 
 ## Task C9 — App runtime gateway/sandbox
-
 **Owner:** Worker C  
 **Depends on:** C8,B3
 
-Route app calls through the gateway, enforce declared outbound destinations and capability checks, isolate app execution from database internals, and capture execution telemetry.
+Route app calls through the gateway, enforce declared outbound destinations/capabilities, isolate apps from database internals, and capture telemetry.
 
 ## Task C10 — Install/update/revoke lifecycle
-
 **Owner:** Worker C  
 **Depends on:** C7,C8,C9
 
 Implement install, configure, enable, update, rollback, disable and uninstall. Uninstall revokes access and preserves canonical data.
 
-## Task C11 — Extension points
-
+## Task C11 — Typed extension points
 **Owner:** Worker C  
 **Depends on:** C9,B1,B5
 
 Implement versioned extension contracts for command, matter_panel, workflow_node, agent, knowledge_provider, connector, artifact_renderer, event_handler and automation_rule.
 
+## Task C12 — Workflow discovery and outcome learning
+**Owner:** Worker C  
+**Depends on:** A6,A7,B8
+
+Detect recurring successful work patterns and build a governed learning pipeline that proposes workflow/agent improvements from approved historical outcomes. Published workflows are never auto-mutated; proposals require approval and cite their source outcomes.
+
+## Task C13 — Matter Twin and scenario simulation
+**Owner:** Worker C  
+**Depends on:** A6,B4,B6,B8
+
+Implement isolated, reproducible scenario simulations against current matter state, assumptions, evidence and approved workflows. Simulations cannot silently mutate canonical Matter/Work state.
+
 ---
 
 ## Task D1 — API/UI shell
-
 **Owner:** Lead with A/C contributions  
 **Depends on:** A3,B4,C2,C7
 
-Build a thin but real application shell exposing Matter Workspace, Case Brain, Legal Inbox, Work execution, Evidence Report, Marketplace and Admin/Policy surfaces. No dead buttons; every visible action maps to a supported backend capability.
+Build a thin production shell for Matter Workspace, Case Brain, Legal Inbox, Work execution, Evidence Report, Marketplace and Admin/Policy. Every visible action must map to a working backend capability; no dead buttons.
 
-## Task D2 — End-to-end proof slices
-
+## Task D2 — End-to-end architecture proof slices
 **Owner:** Lead + all workers  
-**Depends on:** A6,B8,C10,D1
+**Depends on:** A6,B8,C10,D1,C12,C13
 
 Demonstrate complete flows:
 
-1. Create org/user/matter → ingest source → EvidenceLink → Case Brain.
-2. Create legal objective → compile Work Graph → execute AI Workforce → verify → approve artifact.
-3. Install marketplace app → grant matter-scoped capability → invoke app extension → audit → revoke → confirm denial.
-4. Import historical matter → benchmark against baseline → produce reproducible Prove-It report.
-5. Record outcome → update Firm Brain → use resulting knowledge in a subsequent work plan without violating source permissions.
+1. Organization/user → Matter → SourceVersion → EvidenceLink → Case Brain.
+2. Legal objective → Work Compiler → AI Workforce → Verification → Artifact → Approval → Outcome.
+3. Developer → App manifest → validation/security → publication → install → matter-scoped capability → extension invocation → audit → revoke/uninstall.
+4. Historical matter import → benchmark/Prove-It report.
+5. Outcome → governed workflow improvement proposal → human approval path.
+6. Matter Twin scenario → explicit assumptions/evidence → isolated result with no canonical mutation.
 
 ---
 
 ## Integration gates
 
-A worker can merge independently only when its contract tests pass and its public interfaces match the frozen docs. The tech lead owns integration commits and must not accept undocumented cross-lane coupling.
+A worker can merge independently only when its contract tests pass and its public interfaces match the frozen docs. The tech lead owns integration commits and rejects undocumented cross-lane coupling.
